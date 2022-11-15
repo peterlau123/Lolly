@@ -1,4 +1,4 @@
-#include "Lolly/Memory.hpp"
+#include "lolly/Memory.hpp"
 
 #include <ostream>
 
