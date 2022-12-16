@@ -4,36 +4,33 @@
 
 namespace Lolly {
 
-  class SimpleThreadPool {
-  public:
-    SimpleThreadPool();
+class ThreadPool {
+public:
+  ThreadPool();
 
-    ~SimpleThreadPool();
+  bool Init(int num_threads);
 
-    template <typename Func, typename... Args> AddTask(Func f, Args... args);
+  ~ThreadPool();
 
-    SimpleThreadPool() = delete;
+  template <typename Func, typename... Args,
+            typename R = std::result_of<Func(Args...)>::type>
+  std::future<R> AddTask(Func &&f, Args... &&args);
 
-    SimpleThreadPool(const SimpleThreadPool& other_threadpool) = delete;
+  ThreadPool() = delete;
 
-    SimpleThreadPool& operator=(const SimpleThreadPool& other_threadpool) = delete;
+  ThreadPool(const ThreadPool &other_threadpool) = delete;
 
-  private:
-    void Start(int n);
+  ThreadPool &operator=(const ThreadPool &other_threadpool) = delete;
 
-    void Stop();
+private:
+  void Start(int n);
 
-    void ThreadHandle();
+  void Stop();
 
-    int num_threads_;
-    std::vector<std::thread> threads_;
+  void ThreadHandle();
 
-    std::condition_variable cv_;
-
-    std::mutex task_que_mutex_;
-
-    struct TaskBase;
-    using TaskHandle = std::unique_ptr<TaskBase>;
-    std::queue<TaskHandle> task_queue_;
-  };
-}  // namespace Lolly
+  struct Context;
+  using ContextPtr = std::unique_ptr<Context>;
+  ContextPtr impl_ptr_;
+};
+} // namespace Lolly

@@ -1,6 +1,3 @@
-#include"lolly/concurrency/ProducerConsumerQueue.hpp"
+#include "lolly/concurrency/ProducerConsumerQueue.hpp"
 
-
-namespace Lolly {
-
-}
+namespace Lolly {}

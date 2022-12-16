@@ -3,10 +3,8 @@
 /*Single producer and single consumer queue
  *
  */
-namespace Lolly{
+namespace Lolly {
 
-class ProducerConsumerQueue{
+class ProducerConsumerQueue {};
 
-};
-
-}
+} // namespace Lolly

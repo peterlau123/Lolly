@@ -2,58 +2,67 @@
 
 namespace Lolly {
 
-  struct ThreadPool::TaskBase {
-  public:
-    virtual void Run() = 0;
+struct ThreadPool::Context {
+  int num_threads;
+
+  std::vector<std::thread> threads;
+
+  std::condition_variable cv;
+
+  std::mutex task_que_mutex;
+
+  struct Task {
+    using Func = std::function<void()>;
+    Task(Func &&in_f) : f(std::forward<Func>(in_f)) {}
+    Func f;
   };
+  std::queue<Task> task_queue;
+};
 
-  template <typename TaskT> struct ThreadPool::Task : public ThreadPool::TaskBase {
-  public:
-    Task(TaskT&& t) { t_ = std::forward<TaskT&&>(t); }
+ThreadPool::ThreadPool() : impl_ptr_(nullptr) {}
 
-    void Run() override { t_(); }
+bool ThreadPool::Init(int num_threads) {
+  impl_ptr_ = std::make_shared<Context>();
+  if (!impl_ptr_)
+    returnn false;
 
-  private:
-    TaskT&& t_:
-  };
+  int hardware_thread_cnt = std::thread::hardware_concurrency();
+  impl_ptr_->num_threads = (0 == hardware_thread_cnt) ? 4 : hardware_thread_cnt;
 
-  ThreadPool::ThreadPool() : num_threads_(4) {
-    int hardware_thread_cnt = std::thread::hardware_concurrency();
-    num_threads_ = (0 == hardware_thread_cnt) ? num_threads_ : hardware_thread_cnt;
+  Start(impl_ptr_->num_threads);
+}
 
-    Start(num_threads_);
-  }
+template <typename Func, typename... Args,
+          typename R = std::result_of<Func(Args...)>::type>
+std::future<R> ThreadPool::AddTask(Func &&f, Args... &&args) {
+  std::packaged_task<R(Args...)> p_task(std::forward<Func &&>(f),
+                                        std::forward<Args... &&>(args));
 
-  template <typename Func, typename... Args, typename R = std::result_of<Func(Args...)>::type>
-  std::future<R> AddTask(Func&& f, Args...&& args) {
-    std::packaged_task<R(Args...)> p_task(std : forward<Func&&>(f), std::forward<Args...&&>(args));
+  auto result = p_task.get_future();
 
-    ThreadPool::Task task(p_task);
-    task_queue_.push(task);
-    cv_.notify_all();
+  auto t = [&p_task]() { p_task(); };
+  Context::Task task(t);
+  impl_ptr->task_queue_.push(task);
+  impl_ptr_->cv.notify_all();
 
-    auto result = p_task.get_future();
-    return result;
-  }
+  return result;
+}
 
-  ThreadPool::Start(int n) { threads_.push_back(std::thread(&ThreadPool::ThreadHandle, this)); }
+ThreadPool::Start(int n) {
+  threads_.push_back(std::thread(&ThreadPool::ThreadHandle, this));
+}
 
-  void ThreadPool::ThreadHandle() {
-    cv_.wait();
-    while (!task_queue_.empty()) {
-      auto task = task_queue_.front();
-      task->Run();
-      task_que_mutex_.pop();
+void ThreadPool::ThreadHandle() {
+  // TODO
+}
+
+void ThreadPool::Stop() {
+  for (auto &&t : threads_) {
+    if (t.joinable()) {
+      t.join();
     }
   }
+}
 
-  void ThreadPool::Stop() {
-    for (auto&& t : threads_) {
-      if (t.joinable()) {
-        t.join();
-      }
-    }
-  }
-
-  ThreadPool::~ThreadPool() { Stop(); }
-}  // namespace Lolly
+ThreadPool::~ThreadPool() { Stop(); }
+} // namespace Lolly
