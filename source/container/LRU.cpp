@@ -1,11 +1,30 @@
 #include "lolly/container/LRUCache.hpp"
+
 namespace Lolly {
 
+// TODO(liuxin):better use smart pointer
+struct LRUCache::Record {
+  Record() : key(-1), val(-1), decay(0), next(nullptr), prev(nullptr) {}
+
+  Record(int key_, int val_)
+      : key(key_), val(val_), decay(0), next(nullptr), prev(nullptr) {}
+
+  void IncrementDecay(int64_t decay_ = 1) { decay += decay_; }
+
+  void DecrementDecay(int64_t decay_ = 1) { decay -= decay_; }
+
+  int key;
+  int val;
+  int64_t decay; // the smaller ,the more recently used
+  Record *next;
+  Record *prtev;
+};
+
 int LRUCache::get(int key) {
-  auto *result = check_exist(key);
+  auto *result = _check_exist(key);
   if (nullptr != result) {
-    result->decay--;
-    reorder_records(head);
+    result->DecrementDecay(1);
+    _reorder_records(result);
   }
   return result;
 }
@@ -15,13 +34,11 @@ void LRUCache::put(int key, int value) {
     head_ = new Record(key, value);
     head_->next = nullptr;
     head_->prev = nullptr;
-    head_->decay--;
-
+    // head_->decay--;
     tail_ = head_;
-
     cur_length_++;
   } else {
-    Record *cur = check_exist(key);
+    Record *cur = _check_exist_and_update(key);
     if (nullptr == cur) {
       auto *tmp = tail;
       auto *prev = tmp->prev;
@@ -31,16 +48,17 @@ void LRUCache::put(int key, int value) {
       tail = new Record(key, value);
       prev->next = tail;
       tail->prev = prev;
-      tail->decay--;
+      // tail->decay--;
     } else {
       cur->val = value;
-      cur->decay--;
-      reorder_records(cur);
+      // cur->decay--;
+      cur->DecrementDecay(1);
+      _reorder_records(cur);
     }
   }
 }
 
-Record *LRUCache::check_exist(int key) {
+Record *LRUCache::_check_exist_and_update(int key) {
   Record *result = nullptr;
   Record *tmp = head_;
   while (nullptr != tmp) {
@@ -48,6 +66,7 @@ Record *LRUCache::check_exist(int key) {
       result = tmp;
       break;
     } else {
+      tmp->IncrementDecay(1);
       tmp = tmp->next;
     }
   }
@@ -56,21 +75,21 @@ Record *LRUCache::check_exist(int key) {
 
 // ensure that records are ordered by increasing decay
 // least used record is at the tail
-void LRUCache::reorder_records(Record *ptr) {
-  if (nullptr == records_)
+void LRUCache::_reorder_records(Record *ptr) {
+  if (nullptr == records_) {
     return;
+  }
   auto *tmp = ptr;
   while (nullptr != tmp) {
     Record *prev = tmp->prev;
     if (tmp->decay < prev->decay) {
-      insert_before(prev, tmp);
-      break;
+      _insert_before(prev, tmp);
     }
     tmp = tmp->prev;
   }
 }
 
-void LRUCache::insert_before(Record *pos, Record *cur) {
+void LRUCache::_insert_before(Record *pos, Record *cur) {
   cur->prev->next = cur->next;
   cur->next->prev = cur->prev;
   cur->next = pos;

@@ -13,31 +13,20 @@ private:
   int capacity_;
   int cur_length_;
 
-  struct Record {
-    Record()
-        : key(key_), val(val_), decay(std::numeric_limits<int>::max()),
-          next(nullptr), prev(nullptr) {}
-    Record(int key_, int val_)
-        : key(key_), val(val_), decay(std::numeric_limits<int>::max()),
-          next(nullptr), prev(nullptr) {}
-    int key;
-    int val;
-    int decay; // the smaller ,the more recently used
-    Record *next;
-    Record *prtev;
-  };
-
+  struct Record;
   Record *head_;
   Record *tail_;
 
-  // return nullptr when not exist
-  // if list not null,increment each decay
-  Record *check_exist(int key);
+  // return nullptr when list empty or key not exist
+  // if list not empty
+  // when key exists,increment each record's decay except the kay associated
+  // record when key not exists,increment each record's decay
+  Record *_check_exist_and_update(int key);
 
   // ensure that records are ordered by increasing decay
   // least used record is at the tail
-  void reorder_records(Record *ptr);
+  void _reorder_records(Record *ptr);
 
-  void insert_before(Record *pos, Record *cur);
+  void _insert_before(Record *pos, Record *cur);
 };
 } // namespace Lolly
