@@ -1,4 +1,6 @@
 #include <condition_variable>
+#include <cstdint>
+#include <future>
 #include <thread>
 #include <utility>
 
@@ -6,15 +8,13 @@ namespace Lolly {
 
 class ThreadPool {
 public:
-  ThreadPool();
-
   bool Init(int num_threads);
 
   ~ThreadPool();
 
   template <typename Func, typename... Args,
-            typename R = std::result_of<Func(Args...)>::type>
-  std::future<R> AddTask(Func &&f, Args... &&args);
+            typename R = typename std::result_of<Func(Args...)>::type>
+  std::future<R> AddTask(Func &&f, Args &&... args);
 
   ThreadPool() = delete;
 

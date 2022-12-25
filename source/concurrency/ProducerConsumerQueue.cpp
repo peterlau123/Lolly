@@ -1,3 +1,7 @@
 #include "lolly/concurrency/ProducerConsumerQueue.hpp"
 
-namespace Lolly {}
+namespace Lolly {
+
+ProducerConsumerQueue::ProducerConsumerQueue() {}
+
+} // namespace Lolly

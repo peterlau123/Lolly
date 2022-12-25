@@ -1,4 +1,6 @@
-#include "lolly/container/LRUCache.hpp"
+#include "lolly/container/LRU.hpp"
+
+#include <cstdint>
 
 namespace Lolly {
 
@@ -17,20 +19,20 @@ struct LRUCache::Record {
   int val;
   int64_t decay; // the smaller ,the more recently used
   Record *next;
-  Record *prtev;
+  Record *prev;
 };
 
 int LRUCache::get(int key) {
-  auto *result = _check_exist(key);
+  auto *result = _check_exist_and_update(key);
   if (nullptr != result) {
     result->DecrementDecay(1);
     _reorder_records(result);
   }
-  return result;
+  return result->val;
 }
 
 void LRUCache::put(int key, int value) {
-  if (nullptr == records_) {
+  if (nullptr == head_) {
     head_ = new Record(key, value);
     head_->next = nullptr;
     head_->prev = nullptr;
@@ -40,14 +42,14 @@ void LRUCache::put(int key, int value) {
   } else {
     Record *cur = _check_exist_and_update(key);
     if (nullptr == cur) {
-      auto *tmp = tail;
+      auto *tmp = tail_;
       auto *prev = tmp->prev;
       if (capacity_ <= cur_length_) {
         delete tmp;
       }
-      tail = new Record(key, value);
-      prev->next = tail;
-      tail->prev = prev;
+      tail_ = new Record(key, value);
+      prev->next = tail_;
+      tail_->prev = prev;
       // tail->decay--;
     } else {
       cur->val = value;
@@ -58,7 +60,7 @@ void LRUCache::put(int key, int value) {
   }
 }
 
-Record *LRUCache::_check_exist_and_update(int key) {
+LRUCache::Record *LRUCache::_check_exist_and_update(int key) {
   Record *result = nullptr;
   Record *tmp = head_;
   while (nullptr != tmp) {
@@ -76,7 +78,7 @@ Record *LRUCache::_check_exist_and_update(int key) {
 // ensure that records are ordered by increasing decay
 // least used record is at the tail
 void LRUCache::_reorder_records(Record *ptr) {
-  if (nullptr == records_) {
+  if (nullptr == head_) {
     return;
   }
   auto *tmp = ptr;

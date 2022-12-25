@@ -5,6 +5,9 @@
  */
 namespace Lolly {
 
-class ProducerConsumerQueue {};
+class ProducerConsumerQueue {
+public:
+  ProducerConsumerQueue();
+};
 
 } // namespace Lolly
