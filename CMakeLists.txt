@@ -58,6 +58,9 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
 )
 
+# ---- Compile thirdparty library ----
+ADD_SUBDIRECTORY(thirdparty/gtest)
+
 # ---- Create an installable target ----
 # this allows users to install and find the library via `find_package()`.
 
