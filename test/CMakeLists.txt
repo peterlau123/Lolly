@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14...3.22)
 
-project(GreeterTests LANGUAGES CXX)
+project(LollyTests LANGUAGES CXX)
 
 # ---- Options ----
 
@@ -19,16 +19,16 @@ CPMAddPackage("gh:onqtam/doctest@2.4.8")
 CPMAddPackage("gh:TheLartians/Format.cmake@1.7.3")
 
 if(TEST_INSTALLED_VERSION)
-  find_package(Greeter REQUIRED)
+        find_package(Lolly REQUIRED)
 else()
-  CPMAddPackage(NAME Greeter SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
+        CPMAddPackage(NAME Lolly SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
 endif()
 
 # ---- Create binary ----
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 add_executable(${PROJECT_NAME} ${sources})
-target_link_libraries(${PROJECT_NAME} doctest::doctest Greeter::Greeter)
+target_link_libraries(${PROJECT_NAME} doctest::doctest Lolly)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
 
 # enable compiler warnings
@@ -41,7 +41,7 @@ if(NOT TEST_INSTALLED_VERSION)
   endif()
 endif()
 
-# ---- Add GreeterTests ----
+# ---- Add LollyTests ----
 
 enable_testing()
 
