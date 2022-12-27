@@ -59,6 +59,16 @@ private:
   std::unique_ptr<uint8_t, Deleter> pool_data_{nullptr, Deleter()};
 };
 
+
+/*
+ *Memory pool support element index access
+ * */
+template<typename T>
+class IndexedMemoryPool{
+
+};
+
+
 /*
  *No need to specify the total byte and granuality of the memory pool
  *It needs a first-run,after first-run,it collects the memory requirement of the
