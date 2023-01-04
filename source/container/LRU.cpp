@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace Lolly {
-
+// TODO:better use doubl-linked list with loop
 // TODO(liuxin):better use smart pointer
 struct LRUCache::Record {
   Record() : key(-1), val(-1), decay(0), next(nullptr), prev(nullptr) {}

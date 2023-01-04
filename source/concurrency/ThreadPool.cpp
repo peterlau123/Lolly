@@ -38,7 +38,7 @@ bool ThreadPool::Init(int num_threads) {
 }
 
 template <typename Func, typename... Args, typename R>
-std::future<R> ThreadPool::AddTask(Func &&f, Args &&... args) {
+std::future<R> ThreadPool::AddTask(Func &&f, Args &&...args) {
   std::packaged_task<R(Args...)> p_task(std::forward<Func>(f),
                                         std::forward<Args>(args)...);
 
@@ -83,4 +83,5 @@ void ThreadPool::Stop() {
 }
 
 ThreadPool::~ThreadPool() { Stop(); }
+
 } // namespace Lolly

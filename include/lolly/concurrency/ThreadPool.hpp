@@ -12,7 +12,7 @@ public:
 
   template <typename Func, typename... Args,
             typename R = typename std::result_of<Func(Args...)>::type>
-  std::future<R> AddTask(Func &&f, Args &&... args);
+  std::future<R> AddTask(Func &&f, Args &&...args);
 
   ThreadPool() = delete;
 
@@ -31,4 +31,13 @@ private:
   using ContextPtr = std::unique_ptr<Context>;
   ContextPtr impl_ptr_;
 };
+
+/*
+Thread poool based on work stealing
+*/
+class WSThreadPool {
+public:
+  WSThreadPool();
+};
+
 } // namespace Lolly
