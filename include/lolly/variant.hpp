@@ -1,15 +1,16 @@
 #pragma once
-
-<<<<<<< HEAD
-#include "TypeList.hpp"
-#include "Utility.hpp"
+#include "type_list.hpp"
+#include "utility.hpp"
 
 namespace Lolly {
 
 template<typename ...Types>
 class LargestTypeOf{
 public:
-  using Type = IfThenElse<, , >::Type;
+  using Head = Front<Types...>::Type;
+  using Res = PopFont<Types...>::Type;
+  using Type = IfThenElse<sizeof(Head)> sizeof(Res), Head,
+        LargestTypeOf<Res>::Type > ::Type;
 }
 
 template <typename... Types> class VariantStorage {
@@ -28,12 +29,6 @@ public:
   template <typename T> T *getBufferAs { return static_cast<T *>(buffer); }
 };
 
-template <typename... Types> class VariantChoice {};
-
-=======
-namespace Lolly {
-
-template <typename T> class VariantStorage {};
 
 template <typename... Types> class VariantChoice {};
 
@@ -48,7 +43,6 @@ template <typename... Types> class VariantChoice {};
  * std::cout<<v<<std::endl;
  *
  * */
->>>>>>> origin/feat-add_cache_policy
 template <typename... Types> class MyVariant {};
 
 } // namespace Lolly
