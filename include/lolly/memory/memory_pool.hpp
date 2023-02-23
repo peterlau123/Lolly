@@ -59,15 +59,10 @@ private:
   std::unique_ptr<uint8_t, Deleter> pool_data_{nullptr, Deleter()};
 };
 
-
 /*
  *Memory pool support element index access
  * */
-template<typename T>
-class IndexedMemoryPool{
-
-};
-
+template <typename T> class IndexedMemoryPool {};
 
 /*
  *No need to specify the total byte and granuality of the memory pool
