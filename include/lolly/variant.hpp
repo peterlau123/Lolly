@@ -1,5 +1,6 @@
 #pragma once
 
+<<<<<<< HEAD
 #include "TypeList.hpp"
 #include "Utility.hpp"
 
@@ -29,6 +30,25 @@ public:
 
 template <typename... Types> class VariantChoice {};
 
+=======
+namespace Lolly {
+
+template <typename T> class VariantStorage {};
+
+template <typename... Types> class VariantChoice {};
+
+/*
+ * class MyVariant
+ *
+ * Dsicriminated unions
+ *
+ * Usage:
+ * MyVariant<int,double,int> v;
+ * v=2.0f;
+ * std::cout<<v<<std::endl;
+ *
+ * */
+>>>>>>> origin/feat-add_cache_policy
 template <typename... Types> class MyVariant {};
 
 } // namespace Lolly
