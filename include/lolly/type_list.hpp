@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2021 by Sensetime Group Limited. All rights reserved.
- * Liu Xin <liuxin@sensetime.com>
- */
 #pragma once
 
 namespace Lolly {
