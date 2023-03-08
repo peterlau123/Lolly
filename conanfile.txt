@@ -1,0 +1,7 @@
+[requires]
+
+folly/2022.01.31.00
+
+[generators]
+CMakeDeps
+CMakeToolchain
