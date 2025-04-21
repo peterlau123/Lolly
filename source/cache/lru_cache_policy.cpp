@@ -1,4 +1,4 @@
-#include "lolly/container/LRU.hpp"
+#include "lolly/cache/lru_cache_policy.h"
 
 #include <cstdint>
 

@@ -1,7 +1,10 @@
+#pragma once
+
 #include <cstddef>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 namespace Lolly {
 

@@ -1,4 +1,4 @@
-#include "lolly/concurrency/ProducerConsumerQueue.hpp"
+#include "lolly/concurrency/producer_consumer_queue.h"
 
 namespace Lolly {
 

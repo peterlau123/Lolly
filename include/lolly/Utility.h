@@ -1,5 +1,9 @@
 #pragma once
 
+#define _IN_
+#define _OUT_
+#define _INOUT_
+
 namespace Lolly {
 
 template <bool cond, typename T, typename U> class IfThenElse {};

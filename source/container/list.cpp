@@ -1,7 +1,8 @@
-#include "lolly/container/List.hpp"
+#include "lolly/container/list.h"
 
 namespace Lolly {
 
-struct List::Node {};
+template <typename T, typename Allocator>
+struct List<T, Allocator>::Node {};
 
 } // namespace Lolly
