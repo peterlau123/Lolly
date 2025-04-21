@@ -1,4 +1,4 @@
-#include "lolly/parallel/basic_arithmetic.h"
+#include "lolly/parallel/basic.h"
 
 #include <cuda_runtime.h>
 
@@ -13,6 +13,7 @@ void Lolly::reduce(float* left, float** out, int size, ReduceType::Type type) {
         }
 
         cudaError_t err = cudaSuccess;
+
         // Allocate device memory
         float* d_input = nullptr;
         float* d_output = nullptr;

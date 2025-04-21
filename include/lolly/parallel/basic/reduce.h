@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../Utility.h"
+
 namespace Lolly{
 
     namespace parallel{
@@ -35,7 +37,7 @@ namespace Lolly{
     * @param[in]:size
     * @param[out]:out, need to allocate manually outside this function
     */
-    static void reduce(float* input, float** out, int size, ReduceType::Type type);
+    static void reduce(_IN_ float* input, _INOUT_ float** out, _IN_ size, _IN_ ReduceType::Type type);
 }
 
 }
