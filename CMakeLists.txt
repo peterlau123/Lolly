@@ -26,6 +26,8 @@ include(cmake/CPM.cmake)
 # PackageProject.cmake will be used to make our target installable
 CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.8.0")
 
+FetchContent_MakeAvailable(PackageProject.cmake)
+
 CPMAddPackage(
   NAME fmt
   GIT_TAG 8.1.1
@@ -33,24 +35,39 @@ CPMAddPackage(
   OPTIONS "FMT_INSTALL YES" # create an installable target
 )
 
+find_package(CUDA)
+set(USE_CUDA)
+if(CUDA_FOUND)
+  set(USE_CUDA TRUE)
+  add_definitions("-DENABLE_CUDA=1")
+endif()
+
 # ---- Add source files ----
 
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files
 # automatically. Keep that in mind when changing files, or explicitly mention them here.
 file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp")
-file(GLOB_RECURSE cuda_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cu")
+if(USE_CUDA)
+  file(GLOB_RECURSE cuda_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/source/*.cu")
+endif()
 
 # ---- Create library ----
 
 # Note: for header-only libraries change all PUBLIC flags to INTERFACE and create an interface
 # target: add_library(${PROJECT_NAME} INTERFACE)
-add_library(${PROJECT_NAME} ${headers} ${sources} ${cuda_sources})
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
-
-# Set CUDA-specific properties
-set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_STANDARD 17)
-set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+if(USE_CUDA)
+  message(STATUS "CUDA found, compiling with CUDA support")
+  # Add CUDA specific flags
+  set(CMAKE_CUDA_STANDARD 17)
+  set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  set(CMAKE_CUDA_EXTENSIONS OFF)
+  add_library(${PROJECT_NAME} ${headers} ${sources} ${cuda_sources})
+else()
+  add_library(${PROJECT_NAME} ${headers} ${sources})
+  set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17)
+endif()
 
 # being a cross-platform target, we enforce standards conformance on MSVC
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->")

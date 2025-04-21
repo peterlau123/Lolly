@@ -1,4 +1,4 @@
-#include "lolly/memory/MemoryPool.hpp"
+#include "lolly/memory/memory_pool.h"
 
 #include <iostream>
 #include <memory>

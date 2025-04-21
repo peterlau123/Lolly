@@ -1,4 +1,4 @@
-#include "lolly/concurrency/ThreadPool.hpp"
+#include "lolly/concurrency/thread_pool.h"
 
 #include <condition_variable>
 #include <cstdint>
