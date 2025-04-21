@@ -31,10 +31,11 @@ namespace Lolly{
     * This function performs a reduction operation on the input array.
     * It takes an array of floats, an output pointer, the size of the array,
     * and the type of reduction to perform.
-    * @param[in]:
-    * @param[out]:
+    * @param[in]:input
+    * @param[in]:size
+    * @param[out]:out, need to allocate manually outside this function
     */
-    static void reduce(float* left, float** out, int size, ReduceType::Type type);
+    static void reduce(float* input, float** out, int size, ReduceType::Type type);
 }
 
 }
