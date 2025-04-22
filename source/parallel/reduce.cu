@@ -2,7 +2,7 @@
 
 #include <cuda_runtime.h>
 
-//please refer to https://zhuanlan.zhihu.com/p/654027980 for more details
+// please refer to https://zhuanlan.zhihu.com/p/654027980 for more details
 
 using namespace Lolly::parallel;
 
