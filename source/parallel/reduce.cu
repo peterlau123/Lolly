@@ -2,6 +2,8 @@
 
 #include <cuda_runtime.h>
 
+//please refer to https://zhuanlan.zhihu.com/p/654027980 for more details
+
 using namespace Lolly::parallel;
 
 void Lolly::reduce(float *left, float **out, int size, ReduceType::Type type) {

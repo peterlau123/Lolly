@@ -2,7 +2,6 @@
 
 namespace Lolly {
 
-template <typename T, typename Allocator>
-struct List<T, Allocator>::Node {};
+template <typename T, typename Allocator> struct List<T, Allocator>::Node {};
 
 } // namespace Lolly
