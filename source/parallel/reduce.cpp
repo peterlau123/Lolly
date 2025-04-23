@@ -2,6 +2,15 @@
 
 namespace Lolly {
 
-namespace parallel {}
+namespace parallel {
+
+
+
+
+
+
+
+    
+}
 
 } // namespace Lolly
