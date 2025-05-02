@@ -8,36 +8,38 @@
 
 using namespace Lolly::parallel;
 
-__global__ void reduce_sum(float *input, float *output, int offset) {
-  //int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  //atomicAdd(output, input[idx] + input[idx + offset]);
+template <typename Op, typename Type>
+__device__ Type operator()(Type a, Type b, Op op) {
+  return op(a, b);
+}
+
+template <typename Type> struct Sum {
+  __device__ Type operator()(Type a, Type b) { return a + b; }
+};
+
+template <typename Type> struct Max {
+  __device__ Type operator()(Type a, Type b) { return max(a, b); }
+};
+
+template <typename Type> struct Min {
+  __device__ Type operator()(Type a, Type b) { return min(a, b); }
+};
+
+template <typename Op>
+__global__ void reduce(float *input, float *output, Op op) {
+  // int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  // atomicAdd(output, input[idx] + input[idx + offset]);
   int tid = threadIdx.x;
-  float* dv = input + blockDim.x*blockIdx.x;
-  for(int offset = blockDim>>1;0<offset;offset>>1)
-  {
-    if(tid<offset)
-    {
-      dv[tid] + = dv[tid+offset];
+  float *dv = input + blockDim.x * blockIdx.x;
+  for (int offset = blockDim >> 1; 0 < offset; offset >> 1) {
+    if (tid < offset) {
+      op(dv[tid], dv[tid + offset]);
     }
     __syncthreads();
   }
-  if(0==tid)
-  {
-    *output+=dv[0];
-  }
-}
-
-__global__ void reduce_max(float *input, float *output, int size) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < size) {
-    atomicMax(output, input[idx]);
-  }
-}
-
-__global__ void reduce_min(float *input, float *output, int size) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < size) {
-    atomicMin(output, input[idx]);
+  if (0 == tid) {
+    //*output+=dv[0];//may have problem when different thread blocks
+    atomicAdd(output, dv[0]);
   }
 }
 
@@ -80,27 +82,29 @@ void Lolly::reduce(float *input, float **out, int size, ReduceType::Type type) {
 
   int MAX_BLOCK_THREADS = 256;
 
-  //int half_len = std::ceil(size * 1.0 / 2); // TODO:变为2的倍数
-  int NUM_OF_BLOCKS = (size + MAX_BLOCK_THREADS-1) / MAX_BLOCK_THREADS;
+  // int half_len = std::ceil(size * 1.0 / 2); // TODO:变为2的倍数
+  int NUM_OF_BLOCKS = (size + MAX_BLOCK_THREADS - 1) / MAX_BLOCK_THREADS;
 
   dim3 blockDim(MAX_BLOCK_THREADS, 1, 1);
   dim3 gridDim(NUm_OF_BLOCKS, 1, 1);
   // Launch the kernel
   switch (type) {
   case ReduceType::SUM: {
-    reduce_sum<<<gridDim, blockDim>>>(d_input, d_output);
+    reduce<<<gridDim, blockDim>>>(d_input, d_output, Sum());
     break;
   }
-  case ReduceType::MAX:
-    reduce_max(d_input, d_output, size);
+  case ReduceType::MAX: {
+    reduce<<<gridDim, blockDim>>>(d_input, d_output, Max());
     break;
-  case ReduceType::MIN:
-    reduce_min(d_input, d_output, size);
+  }
+  case ReduceType::MIN: {
+    reduce<<<gridDim, blockDim>>>(d_input, d_output, Min());
     break;
+  }
   default:
     fprintf(stderr, "Invalid reduce type!\n");
     return;
   }
-  cudaFree(d_input);
+  cudaFree(&d_input);
   cudaFree(d_output);
 }
