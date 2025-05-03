@@ -4,3 +4,4 @@
 .DS_Store
 install
 *.swp
+test/build

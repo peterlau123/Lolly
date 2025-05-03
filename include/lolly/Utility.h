@@ -6,16 +6,16 @@
 
 namespace Lolly {
 
-template <bool cond, typename T, typename U> class IfThenElse {};
+template <bool cond, typename T, typename U> struct IfThenElse {};
 
-template <true, typename T, typename U> class IfThenElse {
+template <typename T, typename U> struct IfThenElse<true, T, U> {
 public:
-  using Type = typename T;
+  using Type = T;
 };
 
-template <false, typename T, typename U> class IfThenElse {
+template <typename T, typename U> struct IfThenElse<false, T, U> {
 public:
-  using Type = typename U;
+  using Type = U;
 };
 
 } // namespace Lolly

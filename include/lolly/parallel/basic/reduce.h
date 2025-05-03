@@ -37,7 +37,7 @@ public:
  * @param[in]:size
  * @param[out]:out, need to allocate manually outside this function
  */
-static void reduce(_IN_ float *input, _INOUT_ float **out, _IN_ int size,
+static void reduce(_IN_ float *input, _INOUT_ float **out, _IN_ int len,
                    _IN_ ReduceType::Type type);
 } // namespace parallel
 

@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.14...3.22)
-
 # ---- Project ----
 
 # Note: update this to your new project's name and version
@@ -39,10 +38,15 @@ CPMAddPackage(
   OPTIONS "FMT_INSTALL YES" # create an installable target
 )
 
-find_package(CUDA)
-if(CUDA_FOUND)
-  set(USE_CUDA TRUE)
-  add_definitions("-DENABLE_CUDA=1")
+if(USE_CUDA)
+  find_package(CUDA REQUIRED)
+  if(CUDA_FOUND)
+    add_definitions("-DENABLE_CUDA=1")
+  else()
+    message(FATAL_ERROR "CUDA not found, please install CUDA or set USE_CUDA to OFF")
+  endif()
+else()
+  message(STATUS "CUDA not found, skip building cu* files!")
 endif()
 
 # ---- Add source files ----
@@ -83,9 +87,17 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
 )
 
-# ---- Compile thirdparty library ----
-#ADD_SUBDIRECTORY(thirdparty/gtest)
-
+# ---- Set install directory ----
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(CMAKE_HOST_APPLE)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    elseif(CMAKE_HOST_UNIX)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    elseif(CMAKE_HOST_WIN32)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    endif()
+    message(STATUS "设置安装路径为: ${CMAKE_INSTALL_PREFIX}")
+endif()
 # ---- Create an installable target ----
 # this allows users to install and find the library via `find_package()`.
 
