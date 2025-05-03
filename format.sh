@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directories to search
-directories=("include" "source" "test" "standalone")
+directories=("include" "source" "test/source" "standalone/source")
 
 # Find all .cpp, .cu, and .h files in the specified directories
 src_files=$(find "${directories[@]}" -type f \( -name "*.cpp" -o -name "*.cu" -o -name "*.h" \))

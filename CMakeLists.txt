@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.14...3.22)
-
 # ---- Project ----
 
 # Note: update this to your new project's name and version
 project(
   Lolly
-  VERSION 1.0
+  VERSION 0.1.0
   LANGUAGES CXX
 )
 
@@ -17,6 +16,10 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
   )
 endif()
+
+# ---- Build settings ----
+option(BUILD_WITH_TEST "build with test" OFF)
+option(USE_CUDA "turn on using CUDA" OFF)
 
 # ---- Add dependencies via CPM ----
 # see https://github.com/TheLartians/CPM.cmake for more info
@@ -35,11 +38,15 @@ CPMAddPackage(
   OPTIONS "FMT_INSTALL YES" # create an installable target
 )
 
-find_package(CUDA)
-set(USE_CUDA)
-if(CUDA_FOUND)
-  set(USE_CUDA TRUE)
-  add_definitions("-DENABLE_CUDA=1")
+if(USE_CUDA)
+  find_package(CUDA REQUIRED)
+  if(CUDA_FOUND)
+    add_definitions("-DENABLE_CUDA=1")
+  else()
+    message(FATAL_ERROR "CUDA not found, please install CUDA or set USE_CUDA to OFF")
+  endif()
+else()
+  message(STATUS "CUDA not found, skip building cu* files!")
 endif()
 
 # ---- Add source files ----
@@ -80,9 +87,17 @@ target_include_directories(
                          $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
 )
 
-# ---- Compile thirdparty library ----
-ADD_SUBDIRECTORY(thirdparty/gtest)
-
+# ---- Set install directory ----
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(CMAKE_HOST_APPLE)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    elseif(CMAKE_HOST_UNIX)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    elseif(CMAKE_HOST_WIN32)
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "默认安装路径" FORCE)
+    endif()
+    message(STATUS "设置安装路径为: ${CMAKE_INSTALL_PREFIX}")
+endif()
 # ---- Create an installable target ----
 # this allows users to install and find the library via `find_package()`.
 
@@ -96,7 +111,7 @@ packageProject(
   NAMESPACE ${PROJECT_NAME}
   BINARY_DIR ${PROJECT_BINARY_DIR}
   INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
-  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  INCLUDE_DESTINATION include/${PROJECT_NAME}
   VERSION_HEADER "${VERSION_HEADER_LOCATION}"
   COMPATIBILITY SameMajorVersion
   DEPENDENCIES "fmt 8.1.1"
