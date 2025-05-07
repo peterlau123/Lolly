@@ -25,10 +25,10 @@ template <typename Type> struct Min {
   __device__ Type operator()(Type a, Type b) { return min(a, b); }
 };
 
+#if 0
+//use global memory
 template <typename Op>
-__global__ void reduce(float *input, float *output, Op op) {
-  // int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  // atomicAdd(output, input[idx] + input[idx + offset]);
+__global__ void reduce(float *input, int len, float *output, Op op) {
   int tid = threadIdx.x;
   float *dv = input + blockDim.x * blockIdx.x;
   for (int offset = blockDim >> 1; 0 < offset; offset >> 1) {
@@ -42,13 +42,35 @@ __global__ void reduce(float *input, float *output, Op op) {
     atomicAdd(output, dv[0]);
   }
 }
+#else
+// use shared memory
+extern __shared__ float sdata[];
+template <typename Op>
+__global__ void reduce(float *input, int len, float *output, Op op) {
+  int tid = threadIdx.x;
+  float *dv = input + blockDim.x * blockIdx.x;
+  sdata[tid] = tid < len ? dv[tid] : 0.0f;
+  __syncthreads();
 
-void Lolly::reduce(float *input, float **out, int size, ReduceType::Type type) {
-  if (nullptr == input || out == nullptr || size <= 0) {
+  for (int offset = blockDim >> 1; 0 < offset; offset >> 1) {
+    if (tid < offset) {
+      op(sdata[tid], sdata[tid + offset]);
+    }
+    __syncthreads();
+  }
+
+  if (0 == tid) {
+    atomicAdd(output, sdata[0]);
+  }
+}
+#endif
+
+void Lolly::reduce(float *input, float **out, int len, ReduceType::Type type) {
+  if (nullptr == input || out == nullptr || len <= 0) {
     return;
   }
   if (nullptr == *out) {
-    *out = new float[size];
+    *out = new float[len];
     fmt::print(fg(fmt::color::yellow) | fmt::emphasis::bold,
                "out is not allocated outside, allocate it inside reduce");
   }
@@ -78,27 +100,27 @@ void Lolly::reduce(float *input, float **out, int size, ReduceType::Type type) {
   }
   cudaMemset(d_output, 0, 1);
 
-  cudaMemcpy(d_input, input, size * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_input, input, len * sizeof(float), cudaMemcpyHostToDevice);
 
   int MAX_BLOCK_THREADS = 256;
 
   // int half_len = std::ceil(size * 1.0 / 2); // TODO:变为2的倍数
-  int NUM_OF_BLOCKS = (size + MAX_BLOCK_THREADS - 1) / MAX_BLOCK_THREADS;
+  int NUM_OF_BLOCKS = (len + MAX_BLOCK_THREADS - 1) / MAX_BLOCK_THREADS;
 
   dim3 blockDim(MAX_BLOCK_THREADS, 1, 1);
   dim3 gridDim(NUm_OF_BLOCKS, 1, 1);
   // Launch the kernel
   switch (type) {
   case ReduceType::SUM: {
-    reduce<<<gridDim, blockDim>>>(d_input, d_output, Sum());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Sum());
     break;
   }
   case ReduceType::MAX: {
-    reduce<<<gridDim, blockDim>>>(d_input, d_output, Max());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Max());
     break;
   }
   case ReduceType::MIN: {
-    reduce<<<gridDim, blockDim>>>(d_input, d_output, Min());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Min());
     break;
   }
   default:
