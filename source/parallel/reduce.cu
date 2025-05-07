@@ -43,13 +43,13 @@ __global__ void reduce(float *input, int len, float *output, Op op) {
   }
 }
 #else
-//use shared memory
+// use shared memory
 extern __shared__ float sdata[];
 template <typename Op>
 __global__ void reduce(float *input, int len, float *output, Op op) {
   int tid = threadIdx.x;
   float *dv = input + blockDim.x * blockIdx.x;
-  sdata[tid]=tid<len?dv[tid]:0.0f;
+  sdata[tid] = tid < len ? dv[tid] : 0.0f;
   __syncthreads();
 
   for (int offset = blockDim >> 1; 0 < offset; offset >> 1) {
@@ -112,15 +112,15 @@ void Lolly::reduce(float *input, float **out, int len, ReduceType::Type type) {
   // Launch the kernel
   switch (type) {
   case ReduceType::SUM: {
-    reduce<<<gridDim, blockDim>>>(d_input,len, d_output, Sum());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Sum());
     break;
   }
   case ReduceType::MAX: {
-    reduce<<<gridDim, blockDim>>>(d_input,len, d_output, Max());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Max());
     break;
   }
   case ReduceType::MIN: {
-    reduce<<<gridDim, blockDim>>>(d_input,len, d_output, Min());
+    reduce<<<gridDim, blockDim>>>(d_input, len, d_output, Min());
     break;
   }
   default:
